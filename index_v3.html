@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>XBT Content Generator</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#0f0f0f;color:#e0e0e0;padding:20px;max-width:800px;margin:0 auto}
+h1{font-size:20px;font-weight:600;color:#fff;margin-bottom:4px}
+.sub{font-size:13px;color:#666;margin-bottom:24px}
+.card{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;padding:20px;margin-bottom:16px}
+.card-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#555;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #2a2a2a}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px}
+label{font-size:12px;color:#888;display:block;margin-bottom:5px}
+input,select,textarea{width:100%;background:#111;border:1px solid #2a2a2a;border-radius:6px;color:#e0e0e0;font-size:13px;padding:8px 10px;font-family:inherit}
+textarea{resize:vertical;min-height:60px}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#534AB7}
+.types{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px}
+.type-btn{background:#111;border:1px solid #2a2a2a;border-radius:8px;padding:10px;cursor:pointer;text-align:left}
+.type-btn.on{border-color:#534AB7;background:#1a1833}
+.type-btn .name{font-size:12px;font-weight:600;color:#e0e0e0;margin-bottom:2px}
+.type-btn .desc{font-size:11px;color:#555}
+.type-btn.on .name{color:#a89ff0}
+.gen-btn{width:100%;padding:12px;font-size:15px;font-weight:600;cursor:pointer;border-radius:8px;background:#534AB7;color:#fff;border:none;margin-bottom:20px}
+.gen-btn:hover{background:#3C3489}
+.gen-btn:disabled{opacity:.4;cursor:not-allowed}
+.post{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;padding:18px;margin-bottom:12px}
+.post-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.badge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px}
+.badge.thread{background:#1a1833;color:#a89ff0;border:1px solid #534AB7}
+.badge.chart{background:#0d1f18;color:#5DCAA5;border:1px solid #2a6654}
+.badge.hottake{background:#1f0d0d;color:#f07b7b;border:1px solid #6b2a2a}
+.badge.meme{background:#1f1a0d;color:#EF9F27;border:1px solid #6b560a}
+.badge.reply{background:#0d1520;color:#85B7EB;border:1px solid #1e4a7c}
+.badge.article{background:#1a0d1f;color:#d08ef0;border:1px solid #6b2a8a}
+.post-btns{display:flex;gap:6px}
+.ibtn{background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:4px 12px;font-size:12px;color:#888;cursor:pointer}
+.ibtn:hover{background:#222;color:#e0e0e0}
+.content{font-size:13px;line-height:1.75;white-space:pre-wrap;color:#d0d0d0;margin-bottom:10px}
+.tip{font-size:11px;color:#444;border-top:1px solid #2a2a2a;padding-top:8px}
+.sched{font-size:11px;color:#333;margin-top:4px}
+.loading{display:flex;align-items:center;gap:10px;padding:12px 0;color:#555;font-size:13px}
+.spin{width:16px;height:16px;border:2px solid #2a2a2a;border-top-color:#534AB7;border-radius:50%;animation:sp .7s linear infinite;flex-shrink:0}
+@keyframes sp{to{transform:rotate(360deg)}}
+.err{background:#1f0d0d;border:1px solid #6b2a2a;border-radius:6px;padding:10px 12px;font-size:13px;color:#f07b7b;margin-bottom:8px}
+.article-note{background:#1a0d1f;border:1px solid #6b2a8a;border-radius:8px;padding:12px 14px;font-size:12px;color:#d08ef0;margin-bottom:16px;line-height:1.6}
+</style>
+</head>
+<body>
+
+<h1>Daily X Content Generator</h1>
+<p class="sub">@XBTTOINFINITY — SMC / Liquidation / BTC</p>
+
+<div class="card">
+  <p class="card-title">Market Context</p>
+  <div class="grid2">
+    <div><label>BTC Price</label><input id="price" placeholder="e.g. $103,450"/></div>
+    <div><label>Your Bias</label><select id="bias"><option value="bullish">Bullish</option><option value="bearish">Bearish</option><option value="neutral/ranging">Neutral / Ranging</option><option value="uncertain">Uncertain</option></select></div>
+  </div>
+  <div class="grid3">
+    <div><label>Key Level</label><input id="level" placeholder="e.g. $98,200 OB"/></div>
+    <div><label>Liq Cluster</label><input id="liq" placeholder="e.g. $106K longs"/></div>
+    <div><label>Funding Rate</label><input id="funding" placeholder="e.g. +0.042%"/></div>
+  </div>
+  <div style="margin-bottom:12px"><label>Setup / Narrative <span style="color:#444;font-size:11px">(optional but recommended)</span></label><textarea id="extra" placeholder="e.g. BTC swept $98K lows overnight, reclaimed EMA200 on 4H, OI dropped 15% — classic reset before continuation."></textarea></div>
+  <div style="margin-bottom:12px"><label>Article Topic <span style="color:#444;font-size:11px">(only needed if generating article)</span></label><input id="article-topic" placeholder="e.g. How liquidation cascades work, Why most traders lose in ranging markets, The only 3 setups I trade"/></div>
+  <div><label>Tone</label><select id="tone"><option value="sharp and confident like TraderMayne — punchy, no fluff">Sharp & Confident (TraderMayne)</option><option value="analytical and educational like CryptoCred — systematic and clear">Analytical & Educational (CryptoCred)</option><option value="blunt and contrarian like HsakaTrades — macro-heavy">Blunt & Contrarian (Hsaka)</option><option value="conviction-heavy with institutional framing like LightCrypto">Conviction + Institutional (Light)</option></select></div>
+</div>
+
+<div class="card">
+  <p class="card-title">Post Types</p>
+  <div class="types">
+    <button class="type-btn on" data-type="thread" onclick="this.classList.toggle('on')"><div class="name">🧵 Thread</div><div class="desc">8-tweet deep dive</div></button>
+    <button class="type-btn on" data-type="chart" onclick="this.classList.toggle('on')"><div class="name">📊 Chart Reaction</div><div class="desc">Single tweet + setup</div></button>
+    <button class="type-btn on" data-type="chart2" onclick="this.classList.toggle('on')"><div class="name">📈 Chart Reaction 2</div><div class="desc">Alt timeframe angle</div></button>
+    <button class="type-btn on" data-type="hottake" onclick="this.classList.toggle('on')"><div class="name">🔥 Hot Take</div><div class="desc">Contrarian single tweet</div></button>
+    <button class="type-btn on" data-type="meme" onclick="this.classList.toggle('on')"><div class="name">😂 Meme / Wit</div><div class="desc">CT humour format</div></button>
+    <button class="type-btn on" data-type="reply" onclick="this.classList.toggle('on')"><div class="name">💬 Reply Bait</div><div class="desc">Poll or question</div></button>
+    <button class="type-btn" data-type="article" onclick="this.classList.toggle('on')"><div class="name">📝 Article</div><div class="desc">Long-form weekly post</div></button>
+  </div>
+  <div class="article-note">📝 <strong>Article tip:</strong> Post once per week — Sunday or Monday works best. Fill in the Article Topic field above before generating. Articles get a special card preview in the X feed which stops the scroll harder than a plain tweet.</div>
+</div>
+
+<button class="gen-btn" id="gbtn" onclick="generateAll()">⚡ Generate Today's Posts</button>
+<div id="results"></div>
+
+<script>
+const PROXY = 'https://blue-pond-d3d9.wimneys.workers.dev';
+
+const cfg = {
+  thread:{label:'Thread',cls:'thread',
+    tip:'Tweet 1 is text-only — no chart. Add your annotated chart at [ATTACH CHART].',
+    sched:'Post 7–9am. Reply to first 10 comments within 30 min.',
+    p:c=>`Write a high-engagement X thread of exactly 8 tweets for @XBTTOINFINITY.
+BTC: ${c.price} | Bias: ${c.bias} | Level: ${c.level} | Liq: ${c.liq} | Funding: ${c.funding}
+Extra context: ${c.extra||'none'} | Tone: ${c.tone}
+Rules:
+- Tweet 1: text-only hook, contrarian provocation or bold prediction, end with 🧵. Do NOT include [1/8] label.
+- Tweets 2-3: build thesis with SMC language (order blocks, FVGs, liquidity sweeps, inducement)
+- Tweet 4: describe chart setup, mark with [ATTACH CHART HERE]
+- Tweets 5-6: evidence + one unpopular opinion interrupt
+- Tweet 7: specific price level verdict — never vague
+- Tweet 8: CTA + soft follow prompt, max one hashtag. Do NOT include a "Follow for..." line.
+Format each tweet separated by --- on its own line. No [1/8] style labels. Max 240 chars each. Minimal emojis.`},
+  chart:{label:'Chart Reaction',cls:'chart',
+    tip:'Attach your annotated TradingView chart when posting.',
+    sched:'Post midday during active session.',
+    p:c=>`Write one tweet for @XBTTOINFINITY to post with a chart.
+BTC: ${c.price} | Bias: ${c.bias} | Level: ${c.level} | Liq: ${c.liq} | Tone: ${c.tone}
+Under 220 chars, specific price level, one SMC term used naturally, opens with observation not question, no hashtags. Add [ATTACH CHART] on new line at end.
+Return ONLY the tweet + [ATTACH CHART]. No preamble.`},
+  chart2:{label:'Chart Reaction 2',cls:'chart',
+    tip:'Different timeframe from your earlier chart post.',
+    sched:'Post 2–3 hours after first chart post.',
+    p:c=>`Write a second chart-reaction tweet for @XBTTOINFINITY — different timeframe or angle.
+BTC: ${c.price} | Bias: ${c.bias} | Level: ${c.level} | Funding: ${c.funding} | Tone: ${c.tone}
+Higher (weekly) OR lower (15m) timeframe perspective. Under 220 chars, specific zone, no hashtags. Add [ATTACH CHART] at end.
+Return ONLY the tweet + [ATTACH CHART]. No preamble.`},
+  hottake:{label:'Hot Take',cls:'hottake',
+    tip:'No chart. Pure text. Goal is replies and QRTs — not likes.',
+    sched:'Post afternoon during sideways chop.',
+    p:c=>`Write a hot-take tweet for @XBTTOINFINITY.
+BTC: ${c.price} | Bias: ${c.bias} | Extra: ${c.extra||'none'} | Tone: ${c.tone}
+Under 180 chars, challenges crowd belief right now, full conviction, declarative not a question, no hashtags, no emojis.
+Return ONLY the tweet. No preamble.`},
+  meme:{label:'Meme / Wit',cls:'meme',
+    tip:'Dry and deadpan. Punch at the market, never at people.',
+    sched:'Post evenings or during dull sideways sessions.',
+    p:c=>`Write a witty meme-style tweet for @XBTTOINFINITY.
+BTC: ${c.price} | Bias: ${c.bias} | Extra: ${c.extra||'none'}
+CT humour: punch at market psychology or retail behaviour, dry deadpan, under 200 chars, no hashtags, one emoji MAX.
+Return ONLY the tweet. No preamble.`},
+  reply:{label:'Reply Bait',cls:'reply',
+    tip:'No right answer implied — both sides should feel valid.',
+    sched:'Works any time. Great to open or close the day.',
+    p:c=>`Write a reply-bait tweet for @XBTTOINFINITY to maximise comments.
+BTC: ${c.price} | Bias: ${c.bias} | Extra: ${c.extra||'none'}
+Poll, fill-in-the-blank, or pick-a-side. Under 200 chars, no implied right answer, no hashtags.
+Return ONLY the tweet. No preamble.`},
+  article:{label:'Article',cls:'article',
+    tip:'Publish via X Articles (click the + when composing → Article). Post once per week.',
+    sched:'Best posted Sunday or Monday. Pin the tweet linking to it.',
+    p:c=>`Write a full X Article for @XBTTOINFINITY — a crypto trader covering BTC, SMC, and liquidation analysis.
+
+Article topic: ${c.articleTopic||'How liquidation cascades work and how to trade them'}
+BTC context: ${c.price} | Bias: ${c.bias} | Extra: ${c.extra||'none'} | Tone: ${c.tone}
+
+Structure the article as follows:
+1. HEADLINE — punchy, specific, no clickbait. Under 12 words.
+2. INTRO (2-3 sentences) — hook that makes a bold claim or asks a question that creates tension
+3. SECTION 1 — "What most people get wrong" — common misconception in the niche
+4. SECTION 2 — "What's actually happening" — the real mechanism explained clearly with SMC/liquidation language
+5. SECTION 3 — "How to use this" — practical, actionable steps or setup criteria
+6. SECTION 4 — "What I'm watching right now" — tie it to current market context
+7. CLOSING — one punchy paragraph, ends with a question to drive comments
+
+Format with clear section headers. Tone: ${c.tone}. Aim for 600-900 words. Write like a trader talking to other traders, not like a financial educator.`}
+};
+
+function getCtx(){
+  return {
+    price: document.getElementById('price').value||'current BTC price',
+    bias: document.getElementById('bias').value,
+    level: document.getElementById('level').value||'key level',
+    liq: document.getElementById('liq').value||'liq cluster',
+    funding: document.getElementById('funding').value||'current funding',
+    extra: document.getElementById('extra').value||'none',
+    articleTopic: document.getElementById('article-topic').value||'',
+    tone: document.getElementById('tone').value
+  };
+}
+
+async function callAPI(type, c){
+  const resp = await fetch(PROXY, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      model:'claude-sonnet-4-20250514',
+      max_tokens: type === 'article' ? 2000 : 1000,
+      system:'You are an expert crypto Twitter content writer. Return ONLY the requested content — no preamble, no meta-commentary.',
+      messages:[{role:'user', content: cfg[type].p(c)}]
+    })
+  });
+  const data = await resp.json();
+  if(data.error) throw new Error(data.error.message);
+  return data.content.map(b=>b.text||'').join('');
+}
+
+function copyText(id, btn){
+  navigator.clipboard.writeText(document.getElementById(id).innerText).then(()=>{
+    const o=btn.textContent; btn.textContent='Copied!';
+    setTimeout(()=>{btn.textContent=o},2000);
+  });
+}
+
+function setCard(type, text, loading, error){
+  const id='card-'+type;
+  let el=document.getElementById(id);
+  if(!el){el=document.createElement('div');el.id=id;el.className='post';document.getElementById('results').appendChild(el);}
+  const c=cfg[type];
+  if(loading){
+    el.innerHTML=`<div class="post-header"><span class="badge ${c.cls}">${c.label}</span></div><div class="loading"><div class="spin"></div>Generating...</div>`;
+  } else if(error){
+    el.innerHTML=`<div class="post-header"><span class="badge ${c.cls}">${c.label}</span></div><div class="err">${error}</div><button class="ibtn" onclick="regen('${type}')">↻ Retry</button>`;
+  } else {
+    const esc=text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    el.innerHTML=`
+      <div class="post-header">
+        <span class="badge ${c.cls}">${c.label}</span>
+        <div class="post-btns">
+          <button class="ibtn" onclick="regen('${type}')">↻ Redo</button>
+          <button class="ibtn" onclick="copyText('ct-${type}',this)">Copy</button>
+        </div>
+      </div>
+      <pre class="content" id="ct-${type}">${esc}</pre>
+      <div class="tip">${c.tip}</div>
+      <div class="sched">⏰ ${c.sched}</div>`;
+  }
+}
+
+async function regen(type){
+  setCard(type,'',true);
+  try{setCard(type,await callAPI(type,getCtx()));}
+  catch(e){setCard(type,'',false,e.message);}
+}
+
+async function generateAll(){
+  const types=[...document.querySelectorAll('.type-btn.on')].map(b=>b.dataset.type);
+  if(!types.length)return;
+  const c=getCtx();
+  const btn=document.getElementById('gbtn');
+  document.getElementById('results').innerHTML='';
+  btn.disabled=true; btn.textContent='Generating...';
+  types.forEach(t=>setCard(t,'',true));
+  await Promise.allSettled(types.map(async t=>{
+    try{setCard(t,await callAPI(t,c));}
+    catch(e){setCard(t,'',false,e.message);}
+  }));
+  btn.disabled=false; btn.textContent='⚡ Generate Today\'s Posts';
+}
+</script>
+</body>
+</html>
