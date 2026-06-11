@@ -213,7 +213,7 @@ Structure the article as follows:
 
 Format with clear section headers. Tone: ${c.tone}. Aim for 600-900 words. Write like a trader talking to other traders, not like a financial educator.`}
 ,
-  replypost:{label:'Reply to Big Account',cls:'replypost',
+  replypost:{label:'Reply',cls:'replypost',
     tip:'Be early — reply within the first 10 minutes of a big account posting for maximum visibility.',
     sched:'Set notifications for top accounts. Speed is everything — first quality reply wins.',
     p:c=>`You are helping @XBTTOINFINITY — a 26-year-old Asian woman crypto trader — craft a high-engagement reply. Her voice is sharp, confident, authentically female. Not trying to sound like a male CT trader.
@@ -294,15 +294,17 @@ function setCard(type, text, loading, error){
   let el=document.getElementById(id);
   if(!el){el=document.createElement('div');el.id=id;el.className='post';document.getElementById('results').appendChild(el);}
   const c=cfg[type];
+  const tierLabels={small:'Small Account',medium:'Medium Account',rising:'Rising Account',big:'Big Account'};
+  const displayLabel = type==='replypost' ? 'Reply → '+tierLabels[currentTier] : c.label;
   if(loading){
-    el.innerHTML=`<div class="post-header"><span class="badge ${c.cls}">${c.label}</span></div><div class="loading"><div class="spin"></div>Generating...</div>`;
+    el.innerHTML=`<div class="post-header"><span class="badge ${c.cls}">${displayLabel}</span></div><div class="loading"><div class="spin"></div>Generating...</div>`;
   } else if(error){
     el.innerHTML=`<div class="post-header"><span class="badge ${c.cls}">${c.label}</span></div><div class="err">${error}</div><button class="ibtn" onclick="regen('${type}')">↻ Retry</button>`;
   } else {
     const esc=text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     el.innerHTML=`
       <div class="post-header">
-        <span class="badge ${c.cls}">${c.label}</span>
+        <span class="badge ${c.cls}">${displayLabel}</span>
         <div class="post-btns">
           <button class="ibtn" onclick="regen('${type}')">↻ Redo</button>
           <button class="ibtn" onclick="copyText('ct-${type}',this)">Copy</button>
