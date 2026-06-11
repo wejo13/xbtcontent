@@ -46,6 +46,9 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#534AB7}
 .spin{width:16px;height:16px;border:2px solid #2a2a2a;border-top-color:#534AB7;border-radius:50%;animation:sp .7s linear infinite;flex-shrink:0}
 @keyframes sp{to{transform:rotate(360deg)}}
 .err{background:#1f0d0d;border:1px solid #6b2a2a;border-radius:6px;padding:10px 12px;font-size:13px;color:#f07b7b;margin-bottom:8px}
+.tier-btn{background:#111;border:1px solid #2a2a2a;border-radius:8px;padding:8px;cursor:pointer;text-align:center;width:100%}
+.tier-btn.active{border-color:#534AB7;background:#1a1833}
+.tier-btn.active div{color:#a89ff0!important}
 .article-note{background:#1a0d1f;border:1px solid #6b2a8a;border-radius:8px;padding:12px 14px;font-size:12px;color:#d08ef0;margin-bottom:16px;line-height:1.6}
 </style>
 </head>
@@ -67,7 +70,28 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#534AB7}
   </div>
   <div style="margin-bottom:12px"><label>Setup / Narrative <span style="color:#444;font-size:11px">(optional but recommended)</span></label><textarea id="extra" placeholder="e.g. BTC swept $98K lows overnight, reclaimed EMA200 on 4H, OI dropped 15% — classic reset before continuation."></textarea></div>
   <div style="margin-bottom:12px"><label>Article Topic <span style="color:#444;font-size:11px">(only needed if generating article)</span></label><input id="article-topic" placeholder="e.g. How liquidation cascades work, Why most traders lose in ranging markets, The only 3 setups I trade"/></div>
-  <div style="margin-bottom:12px"><label>Target tweet to reply to <span style="color:#444;font-size:11px">(paste the tweet you want to reply to — for reply generator)</span></label><textarea id="target-tweet" placeholder="e.g. paste the tweet from TraderMayne / HsakaTrades / RektCapital that you want to reply to here..."></textarea></div>
+  <div style="margin-bottom:12px">
+    <label>Account size you're replying to</label>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:6px">
+      <button class="tier-btn active" data-tier="small" onclick="setTier(this)">
+        <div style="font-size:12px;font-weight:600;color:#e0e0e0;margin-bottom:2px">🌱 Small</div>
+        <div style="font-size:11px;color:#555">300–1k followers</div>
+      </button>
+      <button class="tier-btn" data-tier="medium" onclick="setTier(this)">
+        <div style="font-size:12px;font-weight:600;color:#e0e0e0;margin-bottom:2px">📈 Medium</div>
+        <div style="font-size:11px;color:#555">1k–5k followers</div>
+      </button>
+      <button class="tier-btn" data-tier="rising" onclick="setTier(this)">
+        <div style="font-size:12px;font-weight:600;color:#e0e0e0;margin-bottom:2px">🚀 Rising</div>
+        <div style="font-size:11px;color:#555">5k–50k followers</div>
+      </button>
+      <button class="tier-btn" data-tier="big" onclick="setTier(this)">
+        <div style="font-size:12px;font-weight:600;color:#e0e0e0;margin-bottom:2px">👑 Big</div>
+        <div style="font-size:11px;color:#555">50k+ followers</div>
+      </button>
+    </div>
+    <div id="tier-tip" style="margin-top:8px;font-size:11px;color:#555;padding:8px 10px;background:#111;border-radius:6px;border:1px solid #2a2a2a"></div>
+  </div>
   <div><label>Tone</label><select id="tone"><option value="sharp and confident like TraderMayne — punchy, no fluff">Sharp & Confident (TraderMayne)</option><option value="analytical and educational like CryptoCred — systematic and clear">Analytical & Educational (CryptoCred)</option><option value="blunt and contrarian like HsakaTrades — macro-heavy">Blunt & Contrarian (Hsaka)</option><option value="conviction-heavy with institutional framing like LightCrypto">Conviction + Institutional (Light)</option></select></div>
 </div>
 
@@ -90,6 +114,34 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#534AB7}
 <div id="results"></div>
 
 <script>
+const tierTips = {
+  small: "🌱 Small accounts read every reply. Be conversational and genuine — you're talking to a peer. Longer replies work here. High chance of getting a response back.",
+  medium: "📈 Medium accounts are growing fast and still engaged with their replies. Mix of authoritative and conversational. Strong add-on replies work well here.",
+  rising: "🚀 Rising accounts get a lot of replies. Be sharp and concise. Your goal is to be noticed by their audience, not just the author. Wit and disagreement stand out.",
+  big: "👑 Big accounts get hundreds of replies. Only post if your reply is exceptional. Ultra short, ultra punchy. One-liners and wit outperform everything else here."
+};
+
+const tierStrategies = {
+  small: "The account has 300-1k followers so write replies that are conversational, peer-to-peer, warm but smart. Longer replies (up to 220 chars) work here. The author will likely read and respond. Focus on starting a genuine back-and-forth.",
+  medium: "The account has 1k-5k followers. Mix of authoritative and conversational tone. Still realistic to get a reply. Add-on replies with data points work well. Up to 200 chars.",
+  rising: "The account has 5k-50k followers and gets many replies. Be sharp, concise, confident. Goal is to be noticed by their audience. Under 160 chars. Wit and sharp disagreement stand out.",
+  big: "The account has 50k+ followers and gets hundreds of replies. Only exceptional replies surface. Ultra short, ultra punchy, under 120 chars. One-liners and wit outperform everything."
+};
+
+let currentTier = 'small';
+
+function setTier(btn) {
+  document.querySelectorAll('.tier-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentTier = btn.dataset.tier;
+  document.getElementById('tier-tip').textContent = tierTips[currentTier];
+}
+
+// Init tip
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('tier-tip').textContent = tierTips['small'];
+});
+
 const PROXY = 'https://blue-pond-d3d9.wimneys.workers.dev';
 
 const cfg = {
@@ -164,22 +216,23 @@ Format with clear section headers. Tone: ${c.tone}. Aim for 600-900 words. Write
   replypost:{label:'Reply to Big Account',cls:'replypost',
     tip:'Be early — reply within the first 10 minutes of a big account posting for maximum visibility.',
     sched:'Set notifications for top accounts. Speed is everything — first quality reply wins.',
-    p:c=>`You are a sharp crypto trader helping @XBTTOINFINITY craft a high-engagement reply to a tweet from a big CT account.
+    p:c=>`You are helping @XBTTOINFINITY — a 26-year-old Asian woman crypto trader — craft a high-engagement reply. Her voice is sharp, confident, authentically female. Not trying to sound like a male CT trader.
 
 Target tweet to reply to:
 "${c.targetTweet||'[no tweet provided — generate a generic example reply for a BTC ranging market post]'}"
 
-Account context: BTC ${c.price} | Bias: ${c.bias} | Tone: ${c.tone}
+Account size context: ${c.tierStrategy}
+BTC: ${c.price} | Bias: ${c.bias} | Tone: ${c.tone}
 
-Generate 3 different reply options, each using a DIFFERENT reply strategy:
+Generate 4 reply options, each using a DIFFERENT strategy, sized appropriately for the account tier:
 
-OPTION 1 — SHARP DISAGREEMENT: Pick one specific point and push back with a counter-thesis. Short, confident, never aggressive. Under 160 chars.
+OPTION 1 — SHARP DISAGREEMENT: Pick one specific point and push back with a confident counter-thesis. Never aggressive.
 
-OPTION 2 — THE ADD-ON: Agree but add one layer they missed. Shows equal knowledge. Include one specific data point (price level, funding, OI). Under 180 chars.
+OPTION 2 — THE ADD-ON: Agree but add one layer they missed. Include one specific data point (price level, funding, OI).
 
-OPTION 3 — THE WIT: Dry one-liner that fits the moment perfectly. The kind that gets liked by the OP and quoted by their followers. Under 120 chars.
+OPTION 3 — THE WIT: Dry, punchy one-liner. The kind that gets liked by the OP and quoted by their followers.
 
-OPTION 4 — THE HUMOUR: Genuinely funny reply. Self-aware, CT-native humour — could be a punchline, a relatable trader pain observation, a absurd analogy, or a meme-format response. The kind that makes people laugh out loud and tag their friends. Under 160 chars.
+OPTION 4 — THE HUMOUR: Genuinely funny. CT-native humour — punchline, relatable trader pain, absurd analogy, or meme-format. Makes people laugh and tag friends.
 
 Format exactly as:
 OPTION 1 (Sharp Disagreement):
@@ -194,7 +247,7 @@ OPTION 3 (The Wit):
 OPTION 4 (The Humour):
 [reply text]
 
-Rules: No "Great point!", no sycophancy, no hashtags, sounds like a real trader not a content creator. Tone: ${c.tone}`}
+Rules: No "Great point!", no sycophancy, no hashtags, sounds like a real person. Length should match the tier strategy above.`}
 };
 
 function getCtx(){
@@ -207,7 +260,9 @@ function getCtx(){
     extra: document.getElementById('extra').value||'none',
     articleTopic: document.getElementById('article-topic').value||'',
     tone: document.getElementById('tone').value,
-    targetTweet: document.getElementById('target-tweet').value||''
+    targetTweet: document.getElementById('target-tweet').value||'',
+    tier: currentTier,
+    tierStrategy: tierStrategies[currentTier]
   };
 }
 
@@ -218,7 +273,7 @@ async function callAPI(type, c){
     body: JSON.stringify({
       model:'claude-sonnet-4-20250514',
       max_tokens: type === 'article' ? 2000 : 1000,
-      system:'You are an expert crypto Twitter content writer. Return ONLY the requested content — no preamble, no meta-commentary.',
+      system:'You are an expert crypto Twitter content writer for a 26-year-old Asian woman trader. Her voice is sharp, confident, and authoritative — but authentically female. Not trying to sound like a male CT trader. Direct, smart, with personality. Return ONLY the requested content — no preamble, no meta-commentary.',
       messages:[{role:'user', content: cfg[type].p(c)}]
     })
   });
