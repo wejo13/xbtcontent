@@ -35,6 +35,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#534AB7}
 .badge.meme{background:#1f1a0d;color:#EF9F27;border:1px solid #6b560a}
 .badge.reply{background:#0d1520;color:#85B7EB;border:1px solid #1e4a7c}
 .badge.article{background:#1a0d1f;color:#d08ef0;border:1px solid #6b2a8a}
+.badge.replypost{background:#0d1a0d;color:#7ef07e;border:1px solid #2a6b2a}
 .post-btns{display:flex;gap:6px}
 .ibtn{background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:4px 12px;font-size:12px;color:#888;cursor:pointer}
 .ibtn:hover{background:#222;color:#e0e0e0}
@@ -66,6 +67,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#534AB7}
   </div>
   <div style="margin-bottom:12px"><label>Setup / Narrative <span style="color:#444;font-size:11px">(optional but recommended)</span></label><textarea id="extra" placeholder="e.g. BTC swept $98K lows overnight, reclaimed EMA200 on 4H, OI dropped 15% — classic reset before continuation."></textarea></div>
   <div style="margin-bottom:12px"><label>Article Topic <span style="color:#444;font-size:11px">(only needed if generating article)</span></label><input id="article-topic" placeholder="e.g. How liquidation cascades work, Why most traders lose in ranging markets, The only 3 setups I trade"/></div>
+  <div style="margin-bottom:12px"><label>Target tweet to reply to <span style="color:#444;font-size:11px">(paste the tweet you want to reply to — for reply generator)</span></label><textarea id="target-tweet" placeholder="e.g. paste the tweet from TraderMayne / HsakaTrades / RektCapital that you want to reply to here..."></textarea></div>
   <div><label>Tone</label><select id="tone"><option value="sharp and confident like TraderMayne — punchy, no fluff">Sharp & Confident (TraderMayne)</option><option value="analytical and educational like CryptoCred — systematic and clear">Analytical & Educational (CryptoCred)</option><option value="blunt and contrarian like HsakaTrades — macro-heavy">Blunt & Contrarian (Hsaka)</option><option value="conviction-heavy with institutional framing like LightCrypto">Conviction + Institutional (Light)</option></select></div>
 </div>
 
@@ -79,6 +81,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#534AB7}
     <button class="type-btn on" data-type="meme" onclick="this.classList.toggle('on')"><div class="name">😂 Meme / Wit</div><div class="desc">CT humour format</div></button>
     <button class="type-btn on" data-type="reply" onclick="this.classList.toggle('on')"><div class="name">💬 Reply Bait</div><div class="desc">Poll or question</div></button>
     <button class="type-btn" data-type="article" onclick="this.classList.toggle('on')"><div class="name">📝 Article</div><div class="desc">Long-form weekly post</div></button>
+    <button class="type-btn" data-type="replypost" onclick="this.classList.toggle('on')"><div class="name">💥 Reply</div><div class="desc">Reply to big accounts</div></button>
   </div>
   <div class="article-note">📝 <strong>Article tip:</strong> Post once per week — Sunday or Monday works best. Fill in the Article Topic field above before generating. Articles get a special card preview in the X feed which stops the scroll harder than a plain tweet.</div>
 </div>
@@ -157,6 +160,41 @@ Structure the article as follows:
 7. CLOSING — one punchy paragraph, ends with a question to drive comments
 
 Format with clear section headers. Tone: ${c.tone}. Aim for 600-900 words. Write like a trader talking to other traders, not like a financial educator.`}
+,
+  replypost:{label:'Reply to Big Account',cls:'replypost',
+    tip:'Be early — reply within the first 10 minutes of a big account posting for maximum visibility.',
+    sched:'Set notifications for top accounts. Speed is everything — first quality reply wins.',
+    p:c=>`You are a sharp crypto trader helping @XBTTOINFINITY craft a high-engagement reply to a tweet from a big CT account.
+
+Target tweet to reply to:
+"${c.targetTweet||'[no tweet provided — generate a generic example reply for a BTC ranging market post]'}"
+
+Account context: BTC ${c.price} | Bias: ${c.bias} | Tone: ${c.tone}
+
+Generate 3 different reply options, each using a DIFFERENT reply strategy:
+
+OPTION 1 — SHARP DISAGREEMENT: Pick one specific point and push back with a counter-thesis. Short, confident, never aggressive. Under 160 chars.
+
+OPTION 2 — THE ADD-ON: Agree but add one layer they missed. Shows equal knowledge. Include one specific data point (price level, funding, OI). Under 180 chars.
+
+OPTION 3 — THE WIT: Dry one-liner that fits the moment perfectly. The kind that gets liked by the OP and quoted by their followers. Under 120 chars.
+
+OPTION 4 — THE HUMOUR: Genuinely funny reply. Self-aware, CT-native humour — could be a punchline, a relatable trader pain observation, a absurd analogy, or a meme-format response. The kind that makes people laugh out loud and tag their friends. Under 160 chars.
+
+Format exactly as:
+OPTION 1 (Sharp Disagreement):
+[reply text]
+
+OPTION 2 (The Add-On):
+[reply text]
+
+OPTION 3 (The Wit):
+[reply text]
+
+OPTION 4 (The Humour):
+[reply text]
+
+Rules: No "Great point!", no sycophancy, no hashtags, sounds like a real trader not a content creator. Tone: ${c.tone}`}
 };
 
 function getCtx(){
@@ -168,7 +206,8 @@ function getCtx(){
     funding: document.getElementById('funding').value||'current funding',
     extra: document.getElementById('extra').value||'none',
     articleTopic: document.getElementById('article-topic').value||'',
-    tone: document.getElementById('tone').value
+    tone: document.getElementById('tone').value,
+    targetTweet: document.getElementById('target-tweet').value||''
   };
 }
 
