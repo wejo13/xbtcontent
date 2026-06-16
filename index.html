@@ -271,7 +271,7 @@ async function callAPI(type, c){
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body: JSON.stringify({
-      model:'claude-sonnet-4-20250514',
+      model:'claude-sonnet-4-5',
       max_tokens: type === 'article' ? 2000 : 1000,
       system:'You are an expert crypto Twitter content writer for a 26-year-old Asian woman trader. Her voice is sharp, confident, and authoritative — but authentically female. Not trying to sound like a male CT trader. Direct, smart, with personality. Return ONLY the requested content — no preamble, no meta-commentary.',
       messages:[{role:'user', content: cfg[type].p(c)}]
